@@ -131,6 +131,26 @@ public class Ukcp{
         this.fastFlush = channelConfig.isFastFlush();
     }
 
+    public static void sendHandshakeReq(User user) {
+        ByteBuf packet = Unpooled.buffer(20);
+        packet.writeInt(255);
+        packet.writeIntLE(0);
+        packet.writeIntLE(0);
+        packet.writeInt(1234567890); // constant?
+        packet.writeInt(0xffffffff); // constant?
+        UDPSend(packet, user);
+    }
+
+    public static void sendHandshakeRsp(User user, int enet, long conv) {
+        ByteBuf packet = Unpooled.buffer(20);
+        packet.writeInt(325);
+        packet.writeIntLE((int) (conv >> 32));
+        packet.writeIntLE((int) (conv & 0xFFFFFFFFL));
+        packet.writeInt(enet);
+        packet.writeInt(340870469); // constant?
+        Ukcp.UDPSend(packet,user);
+    }
+
     public void sendDisconnectPacket(int code) {
         long conv = getConv();
         ByteBuf packet = Unpooled.buffer(20);
@@ -140,15 +160,6 @@ public class Ukcp{
         packet.writeInt(code);
         packet.writeInt(423728276); // constant?
         UDPSend(packet);
-    }
-    public static void sendHandshakeRsp(User user, int enet, long conv) {
-        ByteBuf packet = Unpooled.buffer(20);
-        packet.writeInt(325);
-        packet.writeIntLE((int) (conv >> 32));
-        packet.writeIntLE((int) (conv & 0xFFFFFFFFL));
-        packet.writeInt(enet);
-        packet.writeInt(340870469); // constant?
-        Ukcp.UDPSend(packet,user);
     }
 
     public void UDPSend(ByteBuf packet){
@@ -412,7 +423,7 @@ public class Ukcp{
 
     public void close(boolean sendDisconnectPack) {
         if(sendDisconnectPack){
-            sendDisconnectPacket(5);
+            sendDisconnectPacket(0);
         }
         this.iMessageExecutor.execute(() -> internalClose());
     }
