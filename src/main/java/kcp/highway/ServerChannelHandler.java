@@ -73,8 +73,8 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         }
         // Get
         int code = data.readInt();
-        data.readUnsignedInt(); // Empty
-        data.readUnsignedInt(); // Empty
+        data.readUnsignedIntLE(); // Empty
+        data.readUnsignedIntLE(); // Empty
         int enet = data.readInt();
         data.readUnsignedInt();
         try{
@@ -86,7 +86,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
                 }
                 case 404 -> { // Disconnect
                     if(ukcp!=null) {
-                        ukcp.close();
+                        ukcp.close(false);
                     }
                 }
             }
