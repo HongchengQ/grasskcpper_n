@@ -164,17 +164,17 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
             }
         }
         // established tunnel
-        iMessageExecutor.execute(new UckpEventSender(newConnection, ukcp, byteBuf, msg.sender()));
+        iMessageExecutor.execute(new UkcpEventSender(newConnection, ukcp, byteBuf, msg.sender()));
     }
 
-    static class UckpEventSender implements ITask {
+    static class UkcpEventSender implements ITask {
         private final boolean newConnection;
-        private final Ukcp uckp;
+        private final Ukcp ukcp;
         private final ByteBuf byteBuf;
         private final InetSocketAddress sender;
-        UckpEventSender(boolean newConnection,Ukcp ukcp,ByteBuf byteBuf,InetSocketAddress sender){
+        UkcpEventSender(boolean newConnection,Ukcp ukcp,ByteBuf byteBuf,InetSocketAddress sender){
             this.newConnection=newConnection;
-            this.uckp=ukcp;
+            this.ukcp=ukcp;
             this.byteBuf=byteBuf;
             this.sender=sender;
         }
@@ -182,13 +182,13 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         public void execute() {
             if(newConnection) {
                 try {
-                    uckp.getKcpListener().onConnected(uckp);
+                    ukcp.getKcpListener().onConnected(ukcp);
                 } catch (Throwable throwable) {
-                    uckp.getKcpListener().handleException(throwable, uckp);
+                    ukcp.getKcpListener().handleException(throwable, ukcp);
                 }
             }
-            uckp.user().setRemoteAddress(sender);
-            uckp.read(byteBuf);
+            ukcp.user().setRemoteAddress(sender);
+            ukcp.read(byteBuf);
         }
     }
     private int getSn(ByteBuf byteBuf,ChannelConfig channelConfig){
