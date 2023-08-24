@@ -36,8 +36,8 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         }
         // Get
         int code = data.readInt();
-        long data1 = data.readIntLE();
-        long data2 = data.readIntLE();
+        long data1 = data.readUnsignedIntLE();
+        long data2 = data.readUnsignedIntLE();
         long convId = data1 << 32 | data2;
         data.readInt();
         data.readUnsignedInt();
