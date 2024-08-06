@@ -13,5 +13,6 @@ dependencies {
     //implementation group: 'com.lmax', name: 'disruptor', version: '3.4.2'
     implementation group: 'io.netty', name: 'netty-all', version: '4.1.90.Final'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.5'
+    implementation group: 'net.openhft', name: 'zero-allocation-hashing', version: '0.26ea0'
 }
 //
