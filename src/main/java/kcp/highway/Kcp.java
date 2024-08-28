@@ -1,13 +1,14 @@
 package kcp.highway;
 
-import kcp.highway.erasure.fec.Snmp;
-import kcp.highway.internal.ReItrLinkedList;
-import kcp.highway.internal.ReusableListIterator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.Recycler;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import kcp.highway.erasure.fec.Snmp;
+import kcp.highway.internal.ReItrLinkedList;
+import kcp.highway.internal.ReusableListIterator;
+import net.openhft.hashing.LongHashFunction;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -77,7 +78,7 @@ public class Kcp implements IKcp {
 
     public static final int IKCP_INTERVAL = 100;
 
-    public int IKCP_OVERHEAD = 28;
+    public int IKCP_OVERHEAD = 32;
 
     public static final int IKCP_DEADLINK = 20;
 
@@ -243,6 +244,9 @@ public class Kcp implements IKcp {
                 buf.writeLongLE(seg.ackMask);
                 break;
         }
+
+        buf.writeIntLE(seg.byte_check_code);
+
         Snmp.snmp.OutSegs.increment();
         return buf.writerIndex() - offset;
     }
@@ -727,6 +731,7 @@ public class Kcp implements IKcp {
             byte cmd;
             short frg;
             Segment seg;
+            int byte_check_code;
 
             if (data.readableBytes() < IKCP_OVERHEAD) {
                 break;
@@ -745,6 +750,7 @@ public class Kcp implements IKcp {
             sn = data.readUnsignedIntLE();
             una = data.readUnsignedIntLE();
             len = data.readIntLE();
+            byte_check_code = data.readIntLE();
 
             ackMask = switch (ackMaskSize) {
                 case 8 -> data.readUnsignedByte();
@@ -808,6 +814,7 @@ public class Kcp implements IKcp {
                             seg.ts = ts;
                             seg.sn = sn;
                             seg.una = una;
+                            seg.byte_check_code = byte_check_code;
                             repeat = parseData(seg);
                         }
                     }
@@ -1070,6 +1077,8 @@ public class Kcp implements IKcp {
             newSeg.conv = conv;
             newSeg.cmd = IKCP_CMD_PUSH;
             newSeg.sn = sndNxt;
+            LongHashFunction xxh3 = LongHashFunction.xx3();
+            newSeg.byte_check_code = (int) xxh3.hashBytes(newSeg.data.nioBuffer());
             sndBuf.add(newSeg);
             sndNxt++;
             newSegsCount++;
@@ -1531,6 +1540,8 @@ public class Kcp implements IKcp {
         /***发送分片的次数，每发送一次加一**/
         private int xmit;
 
+        private int byte_check_code;
+
         private long ackMask;
 
         private ByteBuf data;
@@ -1562,6 +1573,7 @@ public class Kcp implements IKcp {
             fastack = 0;
             xmit = 0;
             ackMask=0;
+            byte_check_code = 0;
             if (releaseBuf&&data!=null) {
                 data.release();
             }
