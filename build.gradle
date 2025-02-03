@@ -2,8 +2,8 @@ plugins {
     id 'java-library'
 }
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 repositories {
     mavenCentral()
@@ -11,7 +11,7 @@ repositories {
 dependencies {
     //implementation group: 'org.jctools', name: 'jctools-core', version: '3.3.0'
     //implementation group: 'com.lmax', name: 'disruptor', version: '3.4.2'
-    implementation group: 'io.netty', name: 'netty-all', version: '4.1.71.Final'
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.32'
+    implementation group: 'io.netty', name: 'netty-all', version: '4.1.117.Final'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.16'
 }
 //
